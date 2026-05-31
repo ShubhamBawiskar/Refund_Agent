@@ -34,7 +34,11 @@ def read_policy(query: str = "") -> str:
     if POLICY_CACHE is not None:
         return POLICY_CACHE
 
-    policy_path = os.path.join(os.path.dirname(__file__), 'refund_policy.md')
+    # Check for container path first, then fallback to local path
+    policy_path = os.path.join(os.path.dirname(__file__), 'data', 'refund_policy.md')
+    if not os.path.exists(policy_path):
+        policy_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'refund_policy.md')
+
     try:
         with open(policy_path, 'r') as f:
             POLICY_CACHE = f.read()
