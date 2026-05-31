@@ -3,6 +3,8 @@ import os
 from datetime import datetime, timedelta
 from database import get_db_connection
 
+POLICY_CACHE = None
+
 def query_order(customer_email: str, order_id: int) -> str:
     """Queries an order by customer email and order ID."""
     conn = get_db_connection()
@@ -27,11 +29,16 @@ def query_order(customer_email: str, order_id: int) -> str:
     return json.dumps({"error": "Order not found or email does not match."})
 
 def read_policy(query: str = "") -> str:
-    """Reads the refund policy document."""
+    """Reads the refund policy document from cache or disk."""
+    global POLICY_CACHE
+    if POLICY_CACHE is not None:
+        return POLICY_CACHE
+
     policy_path = os.path.join(os.path.dirname(__file__), 'refund_policy.md')
     try:
         with open(policy_path, 'r') as f:
-            return f.read()
+            POLICY_CACHE = f.read()
+            return POLICY_CACHE
     except FileNotFoundError:
         return "Error: Refund policy document not found."
 

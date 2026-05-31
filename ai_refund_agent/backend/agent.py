@@ -45,13 +45,15 @@ def run_agent_loop(messages: list) -> dict:
         )
         
         message = response.choices[0].message
-        messages.append(message)
+        # Append the assistant's message as a dictionary for easier serialization
+        messages.append(message.model_dump(exclude_none=True))
         
         if not message.tool_calls:
             # The model decided to answer without further tool calls
             return {
                 "final_message": message.content,
-                "reasoning_logs": reasoning_logs
+                "reasoning_logs": reasoning_logs,
+                "messages": messages
             }
             
         # Handle tool calls

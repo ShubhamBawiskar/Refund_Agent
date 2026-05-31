@@ -24,6 +24,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     final_message: str
     reasoning_logs: List[Dict[str, Any]]
+    messages: List[Dict[str, Any]]
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
@@ -39,5 +40,6 @@ async def chat_endpoint(request: ChatRequest):
     
     return ChatResponse(
         final_message=result["final_message"],
-        reasoning_logs=result["reasoning_logs"]
+        reasoning_logs=result["reasoning_logs"],
+        messages=result["messages"]
     )

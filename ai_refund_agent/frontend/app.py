@@ -27,8 +27,15 @@ with col1:
     
     # Display chat history
     for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+        role = msg.get("role")
+        content = msg.get("content")
+        
+        # Skip system messages, tool responses, and assistant tool calls in UI
+        if role == "system" or role == "tool" or (role == "assistant" and msg.get("tool_calls")):
+            continue
+            
+        with st.chat_message(role):
+            st.markdown(content)
             
     # Chat input
     if prompt := st.chat_input("Type your message here..."):
@@ -48,9 +55,14 @@ with col1:
                 
                 final_message = data.get("final_message", "Error: No response from agent.")
                 logs = data.get("reasoning_logs", [])
+                backend_messages = data.get("messages", [])
                 
-                # Append assistant message to state
-                st.session_state.messages.append({"role": "assistant", "content": final_message})
+                # Sync full message history from backend to retain tool call context
+                if backend_messages:
+                    st.session_state.messages = backend_messages
+                else:
+                    # Fallback
+                    st.session_state.messages.append({"role": "assistant", "content": final_message})
                 
                 # Append logs to state
                 if logs:
