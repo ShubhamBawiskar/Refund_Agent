@@ -17,7 +17,13 @@ def query_order(customer_email: str, order_id: int) -> str:
     conn.close()
     
     if order:
-        return json.dumps(dict(order))
+        order_dict = dict(order)
+        try:
+            purchase_date = datetime.fromisoformat(order_dict['purchase_date'])
+            order_dict['days_since_purchase'] = (datetime.now() - purchase_date).days
+        except Exception:
+            pass
+        return json.dumps(order_dict)
     return json.dumps({"error": "Order not found or email does not match."})
 
 def read_policy(query: str = "") -> str:
