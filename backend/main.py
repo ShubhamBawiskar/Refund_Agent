@@ -7,6 +7,8 @@ from typing import List, Dict, Any
 from init_db import init_db
 from agent import run_agent_loop
 
+from fastapi.middleware.cors import CORSMiddleware
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup hook
@@ -17,6 +19,20 @@ async def lifespan(app: FastAPI):
     print("Shutting down...")
 
 app = FastAPI(lifespan=lifespan, title="AI Refund Agent API")
+
+# Configure CORS
+origins = [
+    "http://localhost:8501", # Streamlit
+    "http://localhost:3000", # Next.js
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ChatRequest(BaseModel):
     messages: List[Dict[str, Any]]
