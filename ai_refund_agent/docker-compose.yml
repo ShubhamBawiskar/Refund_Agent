@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: refund_agent_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    security_opt:
+      - apparmor:unconfined
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: refund_agent_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://backend:8000/api/chat
+    depends_on:
+      - backend
+    security_opt:
+      - apparmor:unconfined
+
+volumes:
+  data:
