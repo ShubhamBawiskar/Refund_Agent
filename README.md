@@ -1,57 +1,93 @@
 # AI Customer Support Agent (Refund Processing)
 
-A functional, fully containerized web application representing an AI-powered customer support agent that processes or denies e-commerce refunds based on strict company policies.
+A production-ready, fully containerized web application representing an AI-powered customer support agent that processes or denies e-commerce refunds based on strict company policies.
 
 ## Features
 
-- **Frontend**: Streamlit-based dual-pane UI.
-- **Backend**: FastAPI with standard OpenAI SDK for LLM tool routing.
-- **Database**: SQLite with synthetic edge-case data.
-- **Orchestration**: Fully dockerized with persistence.
+- **Next.js Customer UI**: A premium consumer interface featuring a modern **Liquid Glassmorphism** design, collapsible sidebar, suggestions chips, markdown response rendering, and micro-animated avatars.
+- **Streamlit UI**: An operational dashboard for viewing live customer threads side-by-side with real-time agent reasoning logs and tool calls.
+- **FastAPI Backend**: Built using official FastAPI best practices and SOLID design principles, utilizing the standard OpenAI SDK for LLM agent routing.
+- **Deterministic Security Boundary**: Hardcoded Python logic acting as a safety gate for refund verification.
+- **SQLite Database**: A relational database seeded with realistic customer data and edge cases (expired orders, final sale items, high-value orders).
+
+---
+
+## Directory Structure
+
+Following SOLID design principles, the backend code has been decoupled into distinct layers:
+
+```text
+├── backend/
+│   ├── app/
+│   │   ├── api/            # API routing and endpoint declarations (main.py, chat.py)
+│   │   ├── core/           # Configuration management (config.py, settings)
+│   │   ├── db/             # Database connectivity and seeding (database.py, init_db.py)
+│   │   ├── schemas/        # Pydantic validation models (chat.py)
+│   │   └── services/       # Core business logic (agent.py, tools.py)
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend-nextjs/        # Next.js Liquid Glass customer interface
+├── frontend/               # Streamlit Admin Portal
+└── docker-compose.yml      # Multi-container orchestration
+```
+
+---
 
 ## Quick Start
 
-Experience zero-configuration setup with Docker.
+Experience zero-configuration setup with Docker Compose.
 
 1. **Configure Environment**
    ```bash
    cp .env.example .env
-   # Edit .env and insert your API key
+   # Edit .env and insert your API credentials
    ```
 
 2. **Boot the System (Choose your Profile)**
    
-   To boot the Admin UI (Streamlit):
+   To boot the Next.js Customer UI and Backend:
    ```bash
-   docker-compose --profile admin up --build -d
-   ```
-   
-   To boot the Premium Customer UI (Next.js):
-   ```bash
-   docker-compose --profile public up --build -d
+   docker compose up --build -d
    ```
 
-3. **Access the Application**
-   - Admin Frontend (Streamlit): [http://localhost:8501](http://localhost:8501)
-   - Public Frontend (Next.js): [http://localhost:3000](http://localhost:3000)
-   - Backend API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+3. **Access the Applications**
+   - **Customer UI (Next.js)**: [http://localhost:3000](http://localhost:3000)
+   - **Admin UI (Streamlit)**: [http://localhost:8501](http://localhost:8501)
+   - **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-## Headless Architecture
+---
 
-The system is designed with a completely swappable UI by utilizing a "Headless Architecture". The FastAPI backend is entirely UI-agnostic; it solely accepts and returns standard JSON. 
-Because the API layer is decoupled, you can effortlessly switch between the Streamlit internal ops interface and the custom-styled Next.js consumer interface without touching the core agent logic. Docker Compose profiles (`admin` vs `public`) handle orchestrating the chosen experience.
+## Database Management
 
-## Architecture & Dual-Layer Security
+### Resetting & Seeding Mock Data
+The database file is persistent and stored in a shared volume. To force-reset or update your mock database schema/data after modifying `backend/app/db/init_db.py`:
 
-The system employs a **Dual-Layer Security** model to strictly enforce refund policies without relying solely on the LLM's non-deterministic reasoning.
+1. Delete the persistent SQLite file:
+   ```bash
+   rm data/database.db
+   ```
+2. Restart the backend container:
+   ```bash
+   docker compose restart backend
+   ```
+On startup, the backend automatically detects that the file is missing and executes a fresh initialization run.
 
-1. **LLM Reasoning Layer**: The agent attempts to query orders, read policies, and understand the customer intent. It uses tools to fetch context.
-2. **Deterministic Code Boundary**: Inside the `process_refund` tool execution, a hardcoded Python policy validation checks the actual database record. If an item is marked as "Final Sale" or exceeds $500 in value, the Python function immediately blocks the refund and returns a refusal string back to the LLM. The LLM cannot override this deterministic lock.
+---
 
-## Vendor Agnostic API Hot-Swapping
+## Headless Architecture & Security
 
-This project uses the standard OpenAI Python SDK, but is architected to instantly hot-swap the underlying LLM provider.
+### Headless Design
+The FastAPI backend acts as a completely UI-agnostic engine that solely reads and writes standard JSON schemas. The client interfaces (Next.js and Streamlit) can be swapped or modified independently of the core agent loop.
 
-By modifying the `OPENAI_BASE_URL` and `OPENAI_API_KEY` in the `.env` file, you can effortlessly route all agent traffic to Groq, Gemini (if using an OpenAI-compatible endpoint), or any vLLM local instance.
+### Dual-Layer Security Model
+Security boundaries prevent the LLM from making unauthorized decisions (e.g. bypassing refund limits or final-sale terms):
+1. **LLM Reasoning Layer**: The agent evaluates policies, requests details, and formulates user-facing steps.
+2. **Deterministic Code Boundary**: Inside the `process_refund` tool execution, a hardcoded Python validation validates the database. If an order violates constraints (e.g., exceeds $500, final sale, or over 30 days old), the Python script rejects the action directly and sends a block message to the LLM. The LLM cannot override this code boundary.
 
-See `.env.example` for examples.
+---
+
+## Vendor-Agnostic LLM Routing
+This project leverages standard OpenAI SDK syntax, allowing you to route traffic to any OpenAI-compatible provider (such as Gemini, Groq, or local vLLM instances) simply by modifying the base URL in your `.env` file:
+
+* **Gemini (OpenAI compatibility)**: `BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`
+* **Groq**: `BASE_URL=https://api.groq.com/openai/v1`

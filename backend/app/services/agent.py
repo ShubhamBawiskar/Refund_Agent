@@ -8,8 +8,8 @@ from app.core.config import settings
 # base_url and api_key will be pulled from environment variables,
 # allowing easy swapping to Groq, Gemini, or vLLM.
 client = OpenAI(
-    api_key=settings.OPENAI_API_KEY,
-    base_url=settings.OPENAI_BASE_URL
+    api_key=settings.API_KEY,
+    base_url=settings.BASE_URL
 )
 
 MODEL = settings.LLM_MODEL
