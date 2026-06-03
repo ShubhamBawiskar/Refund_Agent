@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'database.db')
+DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'database.db'))
 
 def get_db_connection():
     """Returns a connection to the SQLite database with dict-like row access."""

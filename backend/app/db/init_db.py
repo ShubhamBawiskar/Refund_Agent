@@ -4,7 +4,7 @@ import sqlite3
 
 # Determine paths
 BASE_DIR = os.path.dirname(__file__)
-DATA_DIR = os.path.join(BASE_DIR, 'data')
+DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..', 'data'))
 DB_PATH = os.path.join(DATA_DIR, 'database.db')
 
 def init_db():
@@ -63,7 +63,7 @@ def init_db():
         (6, 'damroo', 12.00, 'delivered', (now - timedelta(days=5)).isoformat(), False),
         (7, 'flute', 50.00, 'delivered', (now - timedelta(days=5)).isoformat(), False),
         (1, 'Mechanical Keyboard', 120.00, 'delivered', (now - timedelta(days=40)).isoformat(), False), # Over 30 days
-        (2, 'Gaming Monitor', 600.00, 'delivered', (now - timedelta(days=10)).isoformat(), False), # Over $500
+        (2, 'Gaming Monitor', 600.00, 'delivered', (now - timedelta(days=40)).isoformat(), False), # Over $500
         (2, 'HDMI Cable', 15.50, 'delivered', (now - timedelta(days=2)).isoformat(), False),
         (3, 'Designer Sunglasses', 150.00, 'delivered', (now - timedelta(days=12)).isoformat(), True), # Final Sale
         (3, 'T-Shirt', 20.00, 'delivered', (now - timedelta(days=1)).isoformat(), False),

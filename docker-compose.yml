@@ -16,14 +16,27 @@ services:
     security_opt:
       - apparmor:unconfined
 
-  frontend:
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: refund_agent_frontend
+    # profiles: ["admin"]
+  #   ports:
+  #     - "8501:8501"
+  #   environment:
+  #     - API_URL=http://backend:8000/api/chat
+  #   depends_on:
+  #     - backend
+  #   security_opt:
+      # - apparmor:unconfined
+
+  frontend-nextjs:
     build:
-      context: ./frontend
-    container_name: refund_agent_frontend
+      context: ./frontend-nextjs
+    container_name: refund_agent_nextjs
+    # profiles: ["admin"]
     ports:
-      - "8501:8501"
-    environment:
-      - API_URL=http://backend:8000/api/chat
+      - "3000:3000"
     depends_on:
       - backend
     security_opt:

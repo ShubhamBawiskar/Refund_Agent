@@ -7,9 +7,9 @@ import os
 import sys
 
 # Ensure backend directory is in the path
-sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from tools import process_refund
+from app.services.tools import process_refund
 
 class ConnectionWrapper:
     """Wraps a sqlite3 connection to prevent it from being closed by code under test."""
@@ -84,7 +84,7 @@ class TestRefundRules(unittest.TestCase):
     def tearDown(self):
         self.conn.close()
 
-    @patch('tools.get_db_connection')
+    @patch('app.services.tools.get_db_connection')
     def test_refund_over_500_escalation(self, mock_get_db):
         mock_get_db.return_value = ConnectionWrapper(self.conn)
         
@@ -92,7 +92,7 @@ class TestRefundRules(unittest.TestCase):
         self.assertIn("error", response)
         self.assertIn("SECURITY BLOCK: Order value exceeds $500", response["error"])
 
-    @patch('tools.get_db_connection')
+    @patch('app.services.tools.get_db_connection')
     def test_refund_over_30_days_denied(self, mock_get_db):
         mock_get_db.return_value = ConnectionWrapper(self.conn)
         
@@ -100,7 +100,7 @@ class TestRefundRules(unittest.TestCase):
         self.assertIn("error", response)
         self.assertIn("SECURITY BLOCK: Order was placed more than 30 days ago", response["error"])
 
-    @patch('tools.get_db_connection')
+    @patch('app.services.tools.get_db_connection')
     def test_refund_final_sale_denied(self, mock_get_db):
         mock_get_db.return_value = ConnectionWrapper(self.conn)
         
@@ -108,7 +108,7 @@ class TestRefundRules(unittest.TestCase):
         self.assertIn("error", response)
         self.assertIn("SECURITY BLOCK: Item is Final Sale", response["error"])
 
-    @patch('tools.get_db_connection')
+    @patch('app.services.tools.get_db_connection')
     def test_valid_refund_succeeds(self, mock_get_db):
         mock_get_db.return_value = ConnectionWrapper(self.conn)
         

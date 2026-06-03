@@ -19,14 +19,27 @@ Experience zero-configuration setup with Docker.
    # Edit .env and insert your API key
    ```
 
-2. **Boot the System**
+2. **Boot the System (Choose your Profile)**
+   
+   To boot the Admin UI (Streamlit):
    ```bash
-   docker-compose up --build -d
+   docker-compose --profile admin up --build -d
+   ```
+   
+   To boot the Premium Customer UI (Next.js):
+   ```bash
+   docker-compose --profile public up --build -d
    ```
 
 3. **Access the Application**
-   - Frontend: [http://localhost:8501](http://localhost:8501)
+   - Admin Frontend (Streamlit): [http://localhost:8501](http://localhost:8501)
+   - Public Frontend (Next.js): [http://localhost:3000](http://localhost:3000)
    - Backend API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+## Headless Architecture
+
+The system is designed with a completely swappable UI by utilizing a "Headless Architecture". The FastAPI backend is entirely UI-agnostic; it solely accepts and returns standard JSON. 
+Because the API layer is decoupled, you can effortlessly switch between the Streamlit internal ops interface and the custom-styled Next.js consumer interface without touching the core agent logic. Docker Compose profiles (`admin` vs `public`) handle orchestrating the chosen experience.
 
 ## Architecture & Dual-Layer Security
 
