@@ -1,17 +1,18 @@
 import os
 import json
 from openai import OpenAI
-from tools import TOOLS_SCHEMA, AVAILABLE_TOOLS
+from app.services.tools import TOOLS_SCHEMA, AVAILABLE_TOOLS
+from app.core.config import settings
 
 # Initialize client using standard OpenAI SDK. 
 # base_url and api_key will be pulled from environment variables,
 # allowing easy swapping to Groq, Gemini, or vLLM.
 client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY", "dummy-key"),
-    base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+    api_key=settings.OPENAI_API_KEY,
+    base_url=settings.OPENAI_BASE_URL
 )
 
-MODEL = os.environ.get("LLM_MODEL", "gpt-4o")
+MODEL = settings.LLM_MODEL
 
 SYSTEM_PROMPT = """
 You are a helpful customer support agent for an e-commerce company.
@@ -36,7 +37,10 @@ def run_agent_loop(messages: list) -> dict:
         dynamic_system_prompt = f"{SYSTEM_PROMPT}\n\nCRITICAL CONTEXT: Today's date is {current_date}. Use this to calculate time limits."
         messages.insert(0, {"role": "system", "content": dynamic_system_prompt})
 
+    print(f"\n[Agent] Starting agent loop with {len(messages)} messages...", flush=True)
+
     while True:
+        print(f"[Agent] Calling LLM ({MODEL})...", flush=True)
         response = client.chat.completions.create(
             model=MODEL,
             messages=messages,
@@ -50,6 +54,7 @@ def run_agent_loop(messages: list) -> dict:
         
         if not message.tool_calls:
             # The model decided to answer without further tool calls
+            print(f"[Agent] Final LLM Response: {message.content[:100]}...", flush=True)
             return {
                 "final_message": message.content,
                 "reasoning_logs": reasoning_logs,
@@ -60,6 +65,8 @@ def run_agent_loop(messages: list) -> dict:
         for tool_call in message.tool_calls:
             function_name = tool_call.function.name
             function_to_call = AVAILABLE_TOOLS.get(function_name)
+            
+            print(f"[Agent] Tool Call: {function_name} with args: {tool_call.function.arguments}", flush=True)
             
             # Log the thought process/intent
             log_entry = {
@@ -74,6 +81,7 @@ def run_agent_loop(messages: list) -> dict:
             except Exception as e:
                 function_response = json.dumps({"error": str(e)})
                 
+            print(f"[Agent] Tool Response from {function_name}: {function_response[:200]}...", flush=True)
             log_entry["result"] = function_response
             reasoning_logs.append(log_entry)
             

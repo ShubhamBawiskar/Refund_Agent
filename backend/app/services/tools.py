@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
-from database import get_db_connection
+from app.db.database import get_db_connection
 
 POLICY_CACHE = None
 
@@ -35,9 +35,8 @@ def read_policy(query: str = "") -> str:
         return POLICY_CACHE
 
     # Check for container path first, then fallback to local path
-    policy_path = os.path.join(os.path.dirname(__file__), 'data', 'refund_policy.md')
-    if not os.path.exists(policy_path):
-        policy_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'refund_policy.md')
+    base_dir = os.path.dirname(__file__)
+    policy_path = os.path.abspath(os.path.join(base_dir, '..', '..', 'data', 'refund_policy.md'))
 
     try:
         with open(policy_path, 'r') as f:
