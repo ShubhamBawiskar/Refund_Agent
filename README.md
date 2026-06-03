@@ -37,11 +37,15 @@ Following SOLID design principles, the backend code has been decoupled into dist
 
 Experience zero-configuration setup with Docker Compose.
 
-1. **Configure Environment**
+1. **Configure Environment & API Keys**
    ```bash
    cp .env.example .env
-   # Edit .env and insert your API credentials
    ```
+   Open the `.env` file and insert your API credentials.
+   
+   > [!IMPORTANT]
+   > You **must** provide a valid LLM API key (e.g., `GEMINI_API_KEY` or `OPENAI_API_KEY` depending on your provider) inside the `.env` file to get the project working. Without this key/token, the backend agent service will not be able to answer customer queries.
+
 
 2. **Boot the System (Choose your Profile)**
    
